@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="shortcut icon" href="#">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+</head>
+
+<body>
+
+    <h2 id="display">Here ListUser will be displayed</h2>
+
+
+    <button onclick="listuser()">List User</button>
+    <script>
+        function listuser() {
+            fetch('http://127.0.0.1:5000/listuser', {
+                methods: 'GET',
+                headers: {
+                    'Token': '0000'
+                }
+            }).then(function(response) {
+                // The API call was successful!
+                return response.json();
+            }).then(function(data) {
+                // This is the JSON from our response
+                console.log(data);
+                document.getElementById('display').innerHTML = JSON.stringify(data, undefined, 2);
+            }).catch(function(err) {
+                // There was an error
+                console.warn('Something went wrong.', err);
+            });
+        }
+    </script>
+
+    <br>
+    <br>
+
+
+
+
+
+
+</body>
+
+</html>

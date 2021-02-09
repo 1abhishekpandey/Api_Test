@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="shortcut icon" href="#">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+</head>
+
+<body>
+
+
+    <h1>Login Form:</h1>
+    <form>
+        <label for="userid">User Id:</label>
+        <input type="text" id="userid2" name="fname" required><br><br>
+        <label for="pwd">Password:</label>
+        <input type="text" id="pwd" name="Password" minlength="8" required><br><br>
+    </form>
+    <button onclick="login()">Login</button>
+    <h2 id="display2"></h2>
+    <h2 id="display5">If logged in. This Page will be replaced with ListUser()!.</h2>
+    <script>
+        function login() {
+            var a = (document.getElementById('userid2').value);
+            var b = (document.getElementById('pwd').value);
+            if (a == "" || b == "") {
+                var msg = "Please Enter all the fields in SIGN-UP fields!";
+                console.log(msg);
+                document.getElementById('display5').innerHTML = msg;
+
+                //windows.reload();
+                //window.location.reload();
+                return;
+                //window.stop();
+            }
+            var user = {
+                'userid': a,
+                'pswrd': b
+            };
+            document.getElementById('display2').innerHTML = a + " " + b;
+
+            fetch('http://127.0.0.1:5000/login', {
+                method: 'POST',
+                headers: {
+                    'Token': '0000'
+                },
+                body: JSON.stringify(user)
+            }).then(function(response) {
+                // The API call was successful!
+                return response.text();
+            }).then(function(data) {
+                // This is the JSON from our response
+                var str2 = "Succesfully logged in. Userid & Password matched!";
+                var n = data.localeCompare(str2);
+                //alert(n);
+                if (n == 0) {
+                    //window.open('/listuser.html', '_blank');
+                    //window.location.replace("/listuser.html");
+                    window.location.href = "/listuser.html";
+                } else {
+                    console.log(data);
+                    document.getElementById('display5').innerHTML = (data);
+                }
+            }).catch(function(err) {
+                // There was an error
+                console.warn('Something went wrong.', err);
+            });
+        }
+    </script> <br> <br>
+
+
+
+
+    <h1>Signup Form:</h1>
+    <form>
+        <label for="userid">User Id:</label>
+        <input type="text" id="userid3" name="fname" required><br><br>
+        <label for="pwd">Password:</label>
+        <input type="text" id="pwd3" name="Password" minlength="8" required><br><br>
+        <label for="fname">First name:</label>
+        <input type="text" id="fname" name="fname" required><br><br>
+        <label for="lname">Last name:</label>
+        <input type="text" id="lname" name="lname" required><br><br>
+
+    </form>
+    <button onclick="signup()">SignUp</button>
+    <h2 id="display3">Here Sign-Up Prompt will be displayed</h2>
+    <h2 id="display4">Test</h2>
+
+    <script>
+        function signup() {
+
+            var a = (document.getElementById('userid3').value);
+            var b = (document.getElementById('pwd3').value);
+            var c = (document.getElementById('fname').value);
+            var d = (document.getElementById('lname').value);
+
+            if (a == "" || b == "" || c == "" || d == "") {
+                var msg = "Please Enter all the fields in SIGN-UP fields!";
+                console.log(msg);
+                document.getElementById('display3').innerHTML = msg;
+
+                //windows.reload();
+                //window.location.reload();
+                return;
+                //window.stop();
+            }
+
+            document.getElementById('display4').innerHTML = a + " " + b + " " + c + " " + d;
+
+
+
+            var usersignup = {
+                'userid': a,
+                'pswrd': b,
+                'fname': c,
+                'lname': d
+            };
+            document.getElementById('display4').innerHTML = JSON.stringify(usersignup);
+
+
+
+
+
+
+
+            fetch('http://127.0.0.1:5000/signup', {
+                method: 'POST',
+                headers: {
+                    'Token': '0000'
+                },
+                body: JSON.stringify(usersignup)
+            }).then(function(response) {
+                // The API call was successful!
+                return response.text();
+            }).then(function(data) {
+                // This is the JSON from our response
+                var str2 = "Sucessfully Inserted!";
+                var n = data.localeCompare(str2);
+                //alert(n);
+                if (n == 0) {
+                    //window.open('/listuser.html', '_blank');
+                    //window.location.replace("/listuser.html");
+                    window.location.href = "/listuser.html";
+                } else {
+                    console.log(data);
+                    document.getElementById('display3').innerHTML = (data);
+                }
+            }).catch(function(err) {
+                // There was an error
+                console.warn('Something went wrong.', err);
+            });
+        }
+    </script>
+
+
+
+
+</body>
+
+</html>
