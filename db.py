@@ -39,14 +39,12 @@ def head():
 @app.route("/signup",methods=['POST'])
 def signup():
 
-    #if head() == "0":
-     #   return "Invalid Attempt!"
+    if head() == "0":
+        return "Invalid Attempt!"
 
     data = request.get_json(force=True)
     userid = data['userid']
     pswrd = data['pswrd']
-    
-    #print(a)
 
     #UserID & Password Validation to check if they were empty or not.
     if not userid:
@@ -106,15 +104,14 @@ def signup():
 def login():
 
 
-    #if head() == "0":
-     #   return "Invalid Attempt!"
+    if head() == "0":
+        return "Invalid Attempt!"
 
 
     data = request.get_json(force=True)
     userid2 = data['userid']
     pswrd = hashpassword(data['pswrd'])
-    #print(pswrd)
-    
+    print("Password is: ",data['pswrd'])    
     
     try:
         connection = psycopg2.connect(
@@ -133,7 +130,6 @@ def login():
         cursor.execute("""SELECT * FROM employee""")
         records = cursor.fetchall()
         flag = 0
-        index = -1
         for row in records:
             #print(row[0],"    ",row[1])
             if row[0] == userid2 and row[1] == pswrd:
@@ -183,7 +179,21 @@ def listuser():
         # A sample query of all data from the "vendors" table in the "suppliers" database
         cursor.execute("""SELECT userid,fname,lname FROM employee""")
         records = cursor.fetchall()
-        return jsonify(records)
+        #products=[['1','product 1'],['2','product 2']]
+        arr=[]
+        for product in records:
+            vals = {}
+            vals[' userid']=product[0]
+            vals['fname']=product[1]
+            vals['lname']=product[2]
+            
+            arr.append(vals)
+        # Serializing json    
+        #json_object = json.dumps(arr)   
+        #print(json_object)
+        #print((arr))
+        #print(records)
+        return jsonify(arr)
 
     #Handle the error throws by the command that is useful when using python while working with PostgreSQL
     except(Exception, psycopg2.Error) as error:
