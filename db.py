@@ -179,7 +179,21 @@ def listuser():
         # A sample query of all data from the "vendors" table in the "suppliers" database
         cursor.execute("""SELECT userid,fname,lname FROM employee""")
         records = cursor.fetchall()
-        return jsonify(records)
+        #products=[['1','product 1'],['2','product 2']]
+        arr=[]
+        for product in records:
+            vals = {}
+            vals[' userid']=product[0]
+            vals['fname']=product[1]
+            vals['lname']=product[2]
+            
+            arr.append(vals)
+        # Serializing json    
+        #json_object = json.dumps(arr)   
+        #print(json_object)
+        #print((arr))
+        #print(records)
+        return jsonify(arr)
 
     #Handle the error throws by the command that is useful when using python while working with PostgreSQL
     except(Exception, psycopg2.Error) as error:
