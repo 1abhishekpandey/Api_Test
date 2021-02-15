@@ -5,12 +5,15 @@ import flask
 import psycopg2
 from flask_cors import CORS, cross_origin
 import hashlib
+import socket
+from flask import *  
 
 app = Flask(__name__)
-CORS(app, support_credentials=True)
+CORS(app, supports_credentials=True)
+
 #cors = CORS(app, resources={    r"/*":{        "origins": "*"    }})
 
-
+#sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 @app.route("/")
 def home():
@@ -127,6 +130,7 @@ def login():
         #cursor = connection.cursor()
 
         # A sample query of all data from the "vendors" table in the "suppliers" database
+        #cursor.execute("""SELECT * FROM employee EXCEPT SELECT * FROM   employee WHERE  userid = 'root'""")
         cursor.execute("""SELECT * FROM employee""")
         records = cursor.fetchall()
         flag = 0
@@ -139,9 +143,16 @@ def login():
         if flag == 0:
             print(userid2,"    ",pswrd)
             return "Invalid UserID and/or Password. Please try again!!"
-        else: 
-            return "Succesfully logged in. Userid & Password matched!"
         
+        else: 
+            res = make_response('http://127.0.0.1:5500/listuser.html')
+            res.set_cookie('username',userid2, max_age=604800, samesite='Lax', secure=None, httponly=None)
+            print("username  ",request.cookies.get('username'))
+            print("userid2 = ",userid2)
+            #return "Succesfully logged in. Userid & Password matched!"
+            #return render_template('http://127.0.0.1:5500/listuser.html')
+            #return res #redirect(url_for('listuser'))
+            return res
 
     #Handle the error throws by the command that is useful when using python while working with PostgreSQL
     except(Exception, psycopg2.Error) as error:
@@ -177,7 +188,12 @@ def listuser():
         #cursor = connection.cursor()
 
         # A sample query of all data from the "vendors" table in the "suppliers" database
-        cursor.execute("""SELECT userid,fname,lname FROM employee""")
+        tempcookie = request.cookies.get('username')
+        print("Cookie: ",tempcookie)
+        if tempcookie != 'root':
+            cursor.execute("""SELECT userid,fname,lname FROM employee EXCEPT SELECT userid,fname,lname FROM   employee WHERE  userid = 'root'""")
+        else:
+            cursor.execute("""SELECT * FROM employee""")
         records = cursor.fetchall()
         #products=[['1','product 1'],['2','product 2']]
         arr=[]
@@ -208,6 +224,56 @@ def listuser():
             print("PostgreSQL connection is now closed")
     return "Succesfull!"
 
+
+@app.route("/delete",methods=['POST'])
+def delete():
+
+    if head() == "0":
+        return "Invalid Attempt!"
+
+    tempcookie = request.cookies.get('username')
+    print("Cookie: ",tempcookie)
+    if tempcookie != 'root':
+        return "Invalid attempt!"
+    
+    data = request.get_json(force=True)
+    userid = data['userid']        
+
+    try:
+        connection = psycopg2.connect(
+            user = "postgres",
+            password = "rudder",
+            host = "localhost",
+            port = "5432",
+            database = "postgres"
+        )
+
+        # Create a cursor object
+        cursor = connection.cursor()
+        #cursor = connection.cursor()
+
+        # A sample query of all data from the "vendors" table in the "suppliers" database
+        cursor.execute("DELETE FROM employee WHERE userid = %s",(userid))
+        rows_deleted = cursor.rowcount
+        connection.commit()
+        print("Userid: ",userid)
+        if rows_deleted >= 1:
+            return "Deleted Successfully!"
+        else:
+            return "Not Deleted!"
+
+    #Handle the error throws by the command that is useful when using python while working with PostgreSQL
+    except(Exception, psycopg2.Error) as error:
+        print("Error connecting to PostgreSQL database", error)
+        connection = None
+
+    #Close the database connection
+    finally:
+        if(connection != None):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is now closed")
+    return "Not Succesfull!"
 
 #@app.route("/processjson",methods=['POST'])
 def processjson():
