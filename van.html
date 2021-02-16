@@ -2,6 +2,50 @@
 <html>
 
 <head>
+    <script>
+        rudderanalytics = window.rudderanalytics = [];
+
+        var methods = [
+            "load",
+            "page",
+            "track",
+            "identify",
+            "alias",
+            "group",
+            "ready",
+            "reset",
+            "getAnonymousId",
+            "setAnonymousId"
+        ];
+
+        for (var i = 0; i < methods.length; i++) {
+            var method = methods[i];
+            rudderanalytics[method] = function(methodName) {
+                return function() {
+                    rudderanalytics.push([methodName].concat(Array.prototype.slice.call(arguments)));
+                };
+            }(method);
+        }
+        //rudderanalytics.load("1oI1UrPOcRqr5zdpyOWgzEvst9P", "https://enxe8mgj4hq4ux8.m.pipedream.net");
+        //rudderanalytics.load("1oI1UrPOcRqr5zdpyOWgzEvst9P", "https://hosted.rudderlabs.com");
+        //rudderanalytics.load("1oI1UrPOcRqr5zdpyOWgzEvst9P", "https://analytics.amplitude.com/abhishek");
+
+        //Webhook
+        rudderanalytics.load("1oI1UrPOcRqr5zdpyOWgzEvst9P", "http://localhost:8080");
+
+        //Amplitude
+        //rudderanalytics.load("1oI1UrPOcRqr5zdpyOWgzEvst9P", "http://localhost:8080");
+
+
+        //For example,
+        //rudderanalytics.load("1Qb1F3jSWv0eKFBPZcrM7ypgjVo", "http://localhost:8080");
+        rudderanalytics.page();
+    </script>
+    <script src="https://cdn.rudderlabs.com/v1/rudder-analytics.min.js"></script>
+
+
+    <title>Rudder Test</title>
+
     <link rel="shortcut icon" href="#">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -49,6 +93,7 @@
             document.getElementById('display2').innerHTML = a + " " + b;
 
             fetch('http://127.0.0.1:5000/login', {
+                credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Token': '0000'
@@ -58,17 +103,18 @@
                 // The API call was successful!
                 return response.text();
             }).then(function(data) {
-                // This is the JSON from our response
-                var str2 = "Succesfully logged in. Userid & Password matched!";
-                var n = data.localeCompare(str2);
-                //alert(n);
+
+                console.log(data);
+                if (checkCookie() != false) {
 
 
-                if (n == 0) {
-                    setCookie("username", user['userid'], 1);
+                    //setCookie("username", user['userid'], 1);
+                    identify();
                     //window.open('/listuser.html', '_blank');
                     //window.location.replace("/listuser.html");
-                    window.location.href = "/listuser.html";
+                    //window.location.href = "/listuser.html";
+
+                    //window.location.href = data;
                 } else {
                     console.log(data);
                     //document.getElementById('display5').innerHTML = (data);
@@ -128,6 +174,7 @@
             document.getElementById('display4').innerHTML = JSON.stringify(usersignup);
 
             fetch('http://127.0.0.1:5000/signup', {
+                credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Token': '0000'
@@ -142,10 +189,11 @@
                 var n = data.localeCompare(str2);
                 //alert(n);
                 if (n == 0) {
-                    setCookie("username", usersignup['userid'], 1);
+                    //setCookie("username", usersignup['userid'], 1);
                     //window.open('/listuser.html', '_blank');
                     //window.location.replace("/listuser.html");
-                    window.location.href = "/listuser.html";
+                    //window.location.href = "/listuser.html";
+                    alert("Now log-in with userid and password!")
                 } else {
                     console.log(data);
                     document.getElementById('display3').innerHTML = (data);
@@ -160,16 +208,68 @@
 
 
 
-    <script>
-        function setCookie(cname, cvalue, exdays) {
-            var d = new Date();
-            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            var expires = "expires=" + d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Lax";
-        }
-    </script>
+
 
 
 </body>
+
+<script>
+    function identify() {
+        var username = getCookie("username");
+        rudderanalytics.identify(
+            username, {
+                email: "abhishek_login@example.com"
+            }, {
+                page: {
+                    path: "",
+                    referrer: "",
+                    search: "",
+                    title: document.title,
+                    url: window.location.href
+                }
+            },
+            () => {
+                console.log(username);
+                console.log("in identify call 2");
+            }
+        );
+    }
+</script>
+
+
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Lax";
+    }
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function checkCookie() {
+        var username = getCookie("username");
+        if (username != "") {
+            //alert("Welcome again " + username);
+        } else {
+            console.log("You are not authorised to view the list of users.");
+            return false;
+        }
+    }
+</script>
 
 </html>
